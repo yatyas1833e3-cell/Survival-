@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zombie Showdown</title>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+</head>
+<body>
+<h2>Zombie Showdown Multiplayer Build</h2>
+<p>Update SERVER_URL before deployment.</p>
+<script>
+const SERVER_URL = "https://YOUR-SERVER-URL.com";
+let socket=null;
+const teammates={};
+
+function initSocket(){
+  socket = io(SERVER_URL,{transports:["websocket"]});
+
+  socket.on("connect",()=>{
+    socket.emit("find_match");
+
+    setInterval(()=>{
+      socket.emit("player_update",{
+        x:0,y:0,angle:0
+      });
+    },33);
+  });
+
+  socket.on("player_update",(packet)=>{
+    if(packet.id===socket.id) return;
+    teammates[packet.id]=packet.state;
+  });
+
+  socket.on("player_left",(id)=>{
+    delete teammates[id];
+  });
+}
+</script>
+</body>
+</html>
